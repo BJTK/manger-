@@ -66,17 +66,46 @@
             </el-table-column>
                  
             <el-table-column
-                prop="address"
+                prop="mg_state"
                 label="用户状态">
+
+                <el-switch slot-scope="asc"
+                    v-model='asc.row.mg_state'
+                    active-color="#13ce66"
+                    @change="change1()"
+                    inactive-color="#ff4949">
+               </el-switch>
             </el-table-column>
-            <el-table-column
-                 
+            <el-table-column 
                 prop="address"
                 label="操作">
-            </el-table-column>
+    <template slot-scope="scope">
+      
+            <el-button type="primary" icon="el-icon-edit" 
+                    circle size='mini' plain>
+            </el-button>
+            <el-button type="danger" icon="el-icon-delete"
+                    circle size='mini' plain>
+            </el-button>
+            <el-button type="success" icon="el-icon-check"
+                        circle size='mini' plain>
+            </el-button>
+    </template>
+            
+                
+ </el-table-column>
     </el-table>
            <!-- 分页 -->
-
+         <el-pagination
+             @size-change="handleSizeChange"
+             @current-change="handleCurrentChange"
+             class="page-fen"
+            :page-sizes="[2, 4, 6, 8]"
+             :current-page="queryInfo.pagesize"
+            :page-size="5"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+        </el-pagination>
 
 
 
@@ -89,6 +118,7 @@ export default {
 
   data() {
       return {
+            value:"",
            queryInfo: {
             query: '',
             pagenum: 1,
@@ -102,10 +132,8 @@ export default {
             this.getUserData()
        },
   methods: {
-            
+        //  获取数据   
       async getUserData(){
-
-    
         this.$http.defaults.headers.common['Authorization'] = localStorage.getItem('token')
         const res = await this.$http.get('users', {params: this.queryInfo}) 
               console.log(res)
@@ -120,8 +148,22 @@ export default {
          }
 
        },
-
-    
+    //  开关状态
+      change1(){
+         
+          if(!this.userList.mg_state){
+             this.$message({ message: '用户离线状态', center: true, type: "warning" });
+                   
+          }    
+      },
+      //分页操作
+        handleSizeChange(val) {
+        console.log(`每页 ${val} 条`);
+      },
+      handleCurrentChange(val) {
+        console.log(`当前页: ${val}`);
+      }
+ 
   },
 
 
@@ -154,4 +196,9 @@ export default {
 .row-input{
     margin-top:20px;
 }
+.page-fen{
+    margin-top:30px;
+
+}
+
 </style>
