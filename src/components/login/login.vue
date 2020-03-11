@@ -42,7 +42,7 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
 .login-warp {
   height: 100%;
   background: url("../../../static/image/01.jpg") no-repeat 100%;
