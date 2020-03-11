@@ -25,28 +25,20 @@ export default {
     };
   },
   methods: {
-    haddleLogin() {
-      this.$http.post("login", this.formData).then(res => {
-        const {
-          data,
-          meta: { msg, status }
-        } = res.data;
+   async haddleLogin() {
+        const res = await this.$http.post("login", this.formData)
+        const {data, meta: { msg, status }} = res.data;
         if (status === 200) {
+           localStorage.setItem('token',data.token)
           this.$message({ message: msg, center: true, type: "success" });
           this.$router.push({name:'home'})
-
           console.log(res);
         } else {
-          this.$message({
-            message: msg,
-            center: true,
-            type: "error",
-            offset: 100,
-            showClose: true
-          });
+          this.$message({ message: msg, center: true, type: "error", offset: 100,showClose: true  });
         }
-      });
     }
+
+
   }
 };
 </script>
