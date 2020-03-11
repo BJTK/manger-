@@ -14,7 +14,7 @@
     <el-container>
       <el-aside width="250px" class="aside" >
         <el-menu
-      
+        style="padding:30px 0"
         :unique-opened="true"
          >
           <el-submenu index="1">
@@ -103,7 +103,21 @@
 
 <script>
 export default {
-  name: "home"
+  name: "home",
+  data() {
+      return {
+          
+      }
+  },
+
+  beforeCreate() {
+        const token = localStorage.getItem('token');
+        if(!token){
+            this.$router.push({name:"login"})
+        }
+  },
+
+
 };
 </script>
 
