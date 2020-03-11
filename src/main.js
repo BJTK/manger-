@@ -5,10 +5,12 @@ import App from './App'
 import router from './router'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-
+import "./assets/css/reset.css";
+import MyHttpServer from '././components/plugins/http';
 
 
 Vue.use(ElementUI);
+Vue.use(MyHttpServer);
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
