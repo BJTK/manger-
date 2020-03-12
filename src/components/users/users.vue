@@ -13,10 +13,15 @@
               <el-col>
                 <el-input placeholder="请输入内容"
                     v-model="queryInfo.query"
+                    clearable
+                    @clear="seacrclear()"
                     class="input-with-select">
-                    <el-button slot="append" icon="el-icon-search"></el-button>
+                    <el-button slot="append"
+                     icon="el-icon-search"
+                     @click="searchData()"
+                     ></el-button>
                 </el-input>
-                    <el-button type="success" plain>添加用户</el-button>
+                    <el-button type="success" plain  @click="Addusername()">添加用户</el-button>
               </el-col>
 
            </el-row>
@@ -72,21 +77,26 @@
                 <el-switch slot-scope="asc"
                     v-model='asc.row.mg_state'
                     active-color="#13ce66"
-                    @change="change1()"
+                    @change="change1(asc.row)"
                     inactive-color="#ff4949">
                </el-switch>
             </el-table-column>
             <el-table-column 
                 prop="address"
                 label="操作">
-    <template slot-scope="scope">
+    <template slot-scope="userList">
       
             <el-button type="primary" icon="el-icon-edit" 
-                    circle size='mini' plain>
+                    circle size='mini' plain
+                    @click="EditUser(userList.row)">
             </el-button>
+
             <el-button type="danger" icon="el-icon-delete"
-                    circle size='mini' plain>
+                    circle size='mini' plain
+                    @click="deleteUsers(userList.row.id)">
+                    <!-- {{userList.row.id}} -->
             </el-button>
+
             <el-button type="success" icon="el-icon-check"
                         circle size='mini' plain>
             </el-button>
@@ -106,10 +116,66 @@
             layout="total, sizes, prev, pager, next, jumper"
             :total="total">
         </el-pagination>
+                 <!-- 添加对话框 -->
+             <el-dialog title="添加用户" :visible.sync="dialogFormVisible"
+              width="30%"
+              top="280px"
+           
+              >
+                <el-form :model="form" >
+                    <el-form-item label="用户名" label-width="100px">
+                    <el-input v-model="form.username" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户密码" label-width="100px">
+                    <el-input v-model="form.password" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户邮箱" label-width="100px">
+                    <el-input v-model="form.email" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户电话" label-width="100px">
+                    <el-input v-model="form.mobile" autocomplete="off"></el-input>
+                    </el-form-item>
+                   
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="addyh()">确 定</el-button>
+                </div>
+    </el-dialog>
+          
+           <!-- 编辑对话框 -->
+                <el-dialog title="编辑用户" :visible.sync="editFormVisible"
+                    width="30%"
+                    top="280px"
+           
+              >
+                <el-form :model="form" >
+                    <el-form-item label="用户名" label-width="100px">
+                    <el-input v-model="form.username"  disabled autocomplete="off"></el-input>
+                    </el-form-item>
 
-
+                    <el-form-item label="用户邮箱" label-width="100px">
+                    <el-input v-model="form.email" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户电话" label-width="100px">
+                    <el-input v-model="form.mobile" autocomplete="off"></el-input>
+                    </el-form-item>
+                   
+                </el-form>
+                <div slot="footer" class="dialog-footer" >
+                    <el-button @click="editFormVisible = false">取 消</el-button>
+                     
+                    <el-button type="primary"
+                     @click="confirmEditUser"
+                     >确 定</el-button>
+                   
+                </div>
+                 
+ 
+    </el-dialog>
 
        </el-card>
+
 </template>
 
 <script>
@@ -123,15 +189,107 @@ export default {
             query: '',
             pagenum: 1,
             pagesize: 5
-        },
+            },
             userList:[],
-            total:2
+            total:2,
+            dialogFormVisible:false,
+            editFormVisible:false,
+            form:{
+                  username:"",
+                  password:'',
+                  email:"",
+                  mobile:"",
+                  
+                  },
+          
+                  
+            
+
       }
   },
      created()  {
             this.getUserData()
        },
   methods: {
+      //删除用户
+     deleteUsers(userId){
+
+          this.$confirm('删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+
+          const res = await this.$http.delete('users/'+userId);
+            const {meta:{msg,status}} = res.data
+            if(status === 200){
+                    this.getUserData()
+                    this.$message({
+                    type: 'success',
+                    message:msg
+                 });
+                
+                }
+           
+            }).catch(() => {
+            this.$message({
+                type: 'info',
+                message: '已取消删除'
+            });          
+            });
+
+
+        },
+
+      //添加用户
+            async addyh(){
+                const res = await this.$http.post('users/',this.form)
+                console.log(res)
+                const {meta:{msg,status},data}=res.data
+                    if(status === 201){
+                         this.dialogFormVisible=false;
+                         this.form = data
+                         this.getUserData()
+                         this.form = {}
+                               
+
+                    }else{
+                         this.$message({ message: msg, center: true, type: "error" });
+
+                    }
+                 
+
+
+            },
+
+            // 编辑用户
+            async confirmEditUser(){
+                const res = await this.$http.put('users/'+this.form.id,this.form)
+                console.log(res)
+                const {meta:{msg,status},data}=res.data
+                    if(status === 200){
+                         this.editFormVisible=false;
+                         this.getUserData()
+                         this.form = {}
+                               
+
+                    }else{
+                         this.$message({ message: msg, center: true, type: "error" });
+
+                    }
+                 
+
+
+            },
+
+
+
+
+
+
+
+
+
         //  获取数据   
       async getUserData(){
         this.$http.defaults.headers.common['Authorization'] = localStorage.getItem('token')
@@ -149,20 +307,48 @@ export default {
 
        },
     //  开关状态
-      change1(){
-         
-          if(!this.userList.mg_state){
-             this.$message({ message: '用户离线状态', center: true, type: "warning" });
+      change1(user){
+             const res = this.$http.put('users/'+user.id+'/state/'+user.mg_state)
+             console.log(res)
+        //   if(!this.userList.mg_state){
+        //      this.$message({ message: '用户离线状态', center: true, type: "warning" });
                    
-          }    
+        //   }    
       },
       //分页操作
         handleSizeChange(val) {
-        console.log(`每页 ${val} 条`);
+         this.queryInfo.pagesize = val;
+
+         this.getUserData()
+        //  console.log(`每页 ${val} 条`);
       },
       handleCurrentChange(val) {
-        console.log(`当前页: ${val}`);
-      }
+          this.queryInfo.pagenum = val;
+         this.getUserData()
+              
+        //  console.log(`每页 ${val} 条`);
+      },
+    //   搜索
+    searchData(){
+        this.getUserData()
+        },
+    seacrclear(){
+        this.getUserData()
+         
+    },
+     //添加用户
+     Addusername(){
+         this.form ={}
+           this.dialogFormVisible=true
+     },
+     //编辑用户
+     EditUser(user){
+         console.log(user)
+           this.editFormVisible=true
+           this.form = user
+            
+
+     }
  
   },
 
