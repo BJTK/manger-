@@ -98,7 +98,8 @@
             </el-button>
 
             <el-button type="success" icon="el-icon-check"
-                        circle size='mini' plain>
+                        circle size='mini' plain
+                         @click="addUserRole(userList.row)">
             </el-button>
     </template>
             
@@ -174,7 +175,45 @@
  
     </el-dialog>
 
-       </el-card>
+          <!-- check角色视图 -->
+
+             <el-dialog title="分配角色" :visible.sync="dialogFormVisibleRole">
+                <el-form :model="form">
+                    <el-form-item label="用户名" label-width="100px">
+                        {{currentName}}
+                    </el-form-item>
+                    <el-form-item label="角色" label-width="100px">
+                    <el-select v-model="currentid" placeholder="分配角色">
+                         <el-option label="选择角色" :value="-1"></el-option>
+                        <el-option :label="item.roleName"  :value="item.id" 
+                        v-for='(item,i) in roleData'
+                        :key="i"       
+                        ></el-option> 
+                    </el-select>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogFormVisibleRole = false">取 消</el-button>
+                    <el-button type="primary" @click="confrimRole()">确 定</el-button>
+                </div>
+</el-dialog>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+ </el-card>
 
 </template>
 
@@ -185,6 +224,10 @@ export default {
   data() {
       return {
             value:"",
+            currentid:"",
+            currentuserid:"",
+            currentName:"",
+            roleData:[],
            queryInfo: {
             query: '',
             pagenum: 1,
@@ -194,6 +237,7 @@ export default {
             total:2,
             dialogFormVisible:false,
             editFormVisible:false,
+            dialogFormVisibleRole:false,
             form:{
                   username:"",
                   password:'',
@@ -211,6 +255,41 @@ export default {
             this.getUserData()
        },
   methods: {
+
+       //确定修改角色
+         async confrimRole(){
+               const  res = await this.$http.put('users/'+this.currentuserid+'/role',{
+                    rid:this.currentid
+
+               }) 
+
+                    this.dialogFormVisibleRole=false
+
+            //    console.log(res)
+             
+
+
+          },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       //删除用户
      deleteUsers(userId){
 
@@ -343,13 +422,26 @@ export default {
      },
      //编辑用户
      EditUser(user){
-         console.log(user)
+         this.form = user
+         this.currentuserid = user.id
+         console.log("user:"+user)
            this.editFormVisible=true
-           this.form = user
             
 
-     }
- 
+     },
+      //点击添加角色
+       async addUserRole(user){
+           this.currentuserid = user.id
+             const res1=  await this.$http.get('users/'+user.id)
+             this.currentid = res1.data.data.rid
+             const res =  await this.$http.get('roles')
+              this.roleData = res.data.data
+             console.log(res)
+             
+            //  const {data:rid} = res.data
+           this.currentName = user.username
+              this.dialogFormVisibleRole = true
+       }
   },
 
 
